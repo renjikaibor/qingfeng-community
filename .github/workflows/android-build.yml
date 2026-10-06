@@ -1,0 +1,54 @@
+﻿name: Build APK
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Debug - show api.dart content
+        run: |
+          echo "=== git log ==="
+          git log -1 --format=%H
+          echo "=== grep appCommentList ==="
+          grep -n "appCommentList" lib/api.dart || echo "!!! NOT FOUND !!!"
+          echo "=== line count ==="
+          wc -l lib/api.dart
+          echo "=== first 10 lines ==="
+          head -10 lib/api.dart
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Create Android platform
+        run: flutter create --platforms=android .
+
+      - name: Add INTERNET permission
+        run: |
+          MANIFEST=android/app/src/main/AndroidManifest.xml
+          if ! grep -q 'android.permission.INTERNET' $MANIFEST; then
+            sed -i '/<application/i\    <uses-permission android:name="android.permission.INTERNET"/>' $MANIFEST
+          fi
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build APK
+        run: flutter build apk --release
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release
+          path: build/app/outputs/flutter-apk/app-release.apk
