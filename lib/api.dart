@@ -5,9 +5,9 @@ import 'package:http/http.dart' as http;
 
 import 'store.dart';
 
-/// 青风社区 API 客户端 —— 与安卓客户端完全相同的协议。
-/// 所有接口均为 POST 表单（application/x-www-form-urlencoded），
-/// 返回 JSON：code==0 为成功，msg 为提示。
+// comment
+// comment
+// comment
 class ApiException implements Exception {
   final String message;
   ApiException(this.message);
@@ -19,11 +19,11 @@ class Api {
   Api._();
   static final Api I = Api._();
 
-  /// 与安卓 TokenStore.SITE_ROOT 一致：图片/文件也挂在这个根路径下
+  // comment
   static const String siteRoot = 'https://lxczs.cyou/login/';
   static const base = siteRoot;
 
-  /// 相对路径转完整 URL
+  // comment
   static String fileUrl(String? p) {
     if (p == null || p.isEmpty) return '';
     if (p.startsWith('http://') || p.startsWith('https://')) return p;
@@ -41,27 +41,27 @@ class Api {
               headers: const {'Accept': 'application/json'}, body: fields)
           .timeout(const Duration(seconds: 20));
       if (r.statusCode != 200) {
-        throw ApiException('服务器无响应（HTTP ${r.statusCode}）');
+        throw ApiException('Server error (HTTP ${r.statusCode})');
       }
       final j = jsonDecode(utf8.decode(r.bodyBytes));
-      if (j is! Map<String, dynamic>) throw ApiException('服务器返回格式异常');
+      if (j is! Map<String, dynamic>) throw ApiException('Invalid server response');
       return j;
     } on ApiException {
       rethrow;
     } on TimeoutException {
-      throw ApiException('网络超时，请重试');
+      throw ApiException('Network timeout');
     } catch (_) {
-      throw ApiException('网络异常，请检查网络');
+      throw ApiException('Network error');
     }
   }
 
   static Map<String, dynamic> _ok(Map<String, dynamic> j) {
     final code = (j['code'] ?? -1) as num;
-    if (code != 0) throw ApiException((j['msg'] as String?) ?? '请求失败');
+    if (code != 0) throw ApiException((j['msg'] as String?) ?? 'Request failed');
     return j;
   }
 
-  // ---------------- 帖子 ----------------
+  // comment
 
   static Future<List<Post>> postList({int page = 1, int size = 10}) async {
     final j = _ok(await _post('post.php',
@@ -92,8 +92,8 @@ class Api {
   }
 
   static Future<void> publishPost(String content) async {
-    if (content.trim().isEmpty) throw ApiException('写点什么再发布吧');
-    if (content.length > 5000) throw ApiException('正文最多 5000 字');
+    if (content.trim().isEmpty) throw ApiException('Please write something');
+    if (content.length > 5000) throw ApiException('Max 5000 characters');
     await _ok(await _post(
         'post.php', {'action': 'post_publish', 'token': _token, 'content': content}));
   }
@@ -115,7 +115,7 @@ class Api {
         'post.php', {'action': 'post_delete', 'token': _token, 'post_id': '$postId'}));
   }
 
-  // ---------------- 工具 / 应用 ----------------
+  // comment
 
   static Future<List<Tool>> onlineList({int page = 1, int size = 20}) async {
     final j = _ok(await _post(
@@ -137,7 +137,7 @@ class Api {
     return list.whereType<Map<String, dynamic>>().map(AppItem.fromJson).toList();
   }
 
-  /// 应用/工具评论（共用 app_comment.php，以数字 id 区分）
+  // comment
   static Future<List<AppComment>> appCommentList(int appId) async {
     final j = _ok(await _post('app_comment.php',
         {'action': 'comment_list', 'token': _token, 'app_id': '$appId'}));
@@ -173,7 +173,7 @@ class Api {
         {'action': 'comment_delete', 'token': _token, 'comment_id': '$commentId'}));
   }
 
-  // ---------------- 搜索 ----------------
+  // comment
 
   static Future<SearchResult> searchAll(String keyword,
       {int page = 1, int size = 10}) async {
@@ -187,7 +187,7 @@ class Api {
     return SearchResult.fromJson(j);
   }
 
-  // ---------------- 用户 ----------------
+  // comment
 
   static Future<LoginResult> login(String username, String password) async {
     final j = _ok(await _post('login.php',
@@ -223,7 +223,7 @@ class Api {
         {'action': 'update_signature', 'token': _token, 'signature': signature}));
   }
 
-  // ---------------- 签到 ----------------
+  // comment
 
   static Future<CheckinData> checkinStatus() async {
     final j = _ok(await _post('checkin.php', {'action': 'status', 'token': _token}));
@@ -235,7 +235,7 @@ class Api {
     return CheckinData.fromJson(j);
   }
 
-  // ---------------- 私信 / 通知 ----------------
+  // comment
 
   static Future<List<Chat>> msgChats() async {
     final j = _ok(await _post('message.php', {'action': 'msg_chats', 'token': _token}));
@@ -260,7 +260,7 @@ class Api {
     return ((j['unread'] ?? 0) as num).toInt();
   }
 
-  // ---------------- 用户帖子 ----------------
+  // comment
 
   static Future<List<Post>> userPosts(int uid, {int page = 1, int size = 10}) async {
     final j = _ok(await _post('user_posts.php',
@@ -270,7 +270,7 @@ class Api {
   }
 }
 
-// ================= 模型 =================
+// comment
 
 class User {
   final int uid;
@@ -387,7 +387,7 @@ class Comment {
       );
 }
 
-/// 应用/工具的评论（app_comment.php）
+// comment
 class AppComment {
   final int id;
   final int appId;
